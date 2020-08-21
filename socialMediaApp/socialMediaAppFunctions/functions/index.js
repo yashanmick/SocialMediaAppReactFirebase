@@ -21,11 +21,14 @@ const firebaseConfig = {
 };
 
 const firebase = require('firebase');
+const { ResultStorage } = require('firebase-functions/lib/providers/testLab');
 firebase.initializeApp(firebaseConfig);
+
+const db = admin.firestore();
 
 
 app.get('/screams', (req, res) => {
-    admin.firestore().collection('screams').orderBy('createdAt', 'desc').get()
+    db.collection('screams').orderBy('createdAt', 'desc').get()
         .then(data => {
             let screams = [];
             data.forEach(doc => {
@@ -54,7 +57,7 @@ app.post('/scream', (req, res) => {
         userHandle: req.body.userHandle,
         createdAt: new Date().toISOString()         //date format to string
     };
-    admin.firestore()
+    db
         .collection('screams')
         .add(newScream)
         .then(doc => {
@@ -76,16 +79,48 @@ app.post('/signup', (req, res) => {
         confirmPassword: req.body.confirmPassword,
         handle: req.body.handle,
     };
+    //TODO: validate data
+    let token, userId;
 
-    // TODO validate data
-
-    firebase.auth().createUserWithEmailAndPassword(newUser.email, newUser.password)
+    //checking the handle being unique
+    db.doc(`/users/${newUser.handle}`).get()
+        .then((doc) => {
+            //if user already exists
+            if (doc.exists) {
+                return res.status(400).json({ handle: 'this handle is already taken' });
+            } else {
+                return firebase
+                    .auth()
+                    .createUserWithEmailAndPassword(newUser.email, newUser.password)
+            }
+        })
         .then((data) => {
-            return res.status(201).json({ message: `user ${data.user.uid} signed up successfully` });
+            userId = data.user.uid;
+            //return a authentication token to the user
+            return data.user.getIdToken();
+        })
+        .then((idToken) => {
+            token = idToken;
+            //create a new collection
+            const userCredentials = {
+                handle: newUser.handle,
+                email: newUser.email,
+                createdAt: new Date().toISOString(),
+                userId
+            };
+            //use this colleciton
+            return db.doc(`/users/${newUser.handle}`).set(userCredentials);
+        })
+        .then(() => {
+            return res.status(201).json({ token });
         })
         .catch(err => {
             console.error(err);
-            return res.status(500).json({ error: err.code });
+            if (err.code === 'auth/email-already-in-use') {
+                return res.status(400).json({ email: 'Email is already in use' })
+            } else {
+                return res.status(500).json({ error: err.code });
+            }
         });
 });
 
