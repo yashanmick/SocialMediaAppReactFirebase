@@ -47,14 +47,51 @@ app.get('/screams', (req, res) => {
         .catch(err => console.error(err));
 });
 
-app.post('/scream', (req, res) => {
+//Middleware function
+//user authentication
+const FBAuth = (req, res, next) => {
+    let idToken;
+
+    //if auth ant auth token startsWith('Bearer ')
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+        //extracting the token from headers
+        // header_format => Bearer Token
+        //headers.authorization[0] => Bearer
+        //headers.authorization[1] => Token
+        idToken = req.headers.authorization.split('Bearer ')[1];
+    } else {
+        console.error('No token found');
+        //unknown authorize error
+        return res.status(403).json({ error: 'Unauthorized' });
+    }
+    //verify the token
+    admin.auth().verifyIdToken(idToken)
+        .then(decodedToken => {
+            req.user = decodedToken;
+            console.log(decodedToken);
+            return db.collection('users')
+                .where('userId', '==', req.user.uid)
+                .limit(1)
+                .get();
+        })
+        .then((data) => {
+            req.user.handle = data.docs[0].data().handle;
+            return next();
+        })
+        .catch(err => {
+            console.error('Error while verifying token ', err);
+            return res.status(403).json(err);
+        })
+}
+
+app.post('/scream', FBAuth, (req, res) => {
     // if (request.method != 'POST') {
     //     return res.status(400).json({ error: 'Method not allowed' });
     // }
     //dont need above validation coz. with express it is automatically handles.
     const newScream = {
         body: req.body.body,
-        userHandle: req.body.userHandle,
+        userHandle: req.user.handle,
         createdAt: new Date().toISOString()         //date format to string
     };
     db
@@ -199,7 +236,12 @@ app.post('/login', (req, res) => {
         })
         .catch(err => {
             console.error(err);
-            return res.status(500).json({ error: err.code });
+            if (err.code === 'auth/wrong-password') {
+                return res.status(403).json({ general: 'Wrong credentials, please try again' });
+            } else {
+                return res.status(500).json({ error: err.code });
+            }
+
         })
 
 })
