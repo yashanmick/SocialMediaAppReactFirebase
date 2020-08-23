@@ -1,4 +1,4 @@
-const { db } = require('../util/admin');
+const { admin, db } = require('../util/admin');
 
 const config = require('../util/config');
 
@@ -96,4 +96,60 @@ exports.login = (req, res) => {
             }
 
         });
+}
+
+
+// upload image
+//      npm install --save busboy
+exports.uploadImage = (req, res) => {
+    const BusBoy = require('busboy');
+    const path = require('path');
+    const os = require('os');
+    const fs = require('fs');
+
+    let imaeFileName;
+    let imageToBeUploaded = {};     //initializing image object
+
+    const busboy = new BusBoy({ headers: req.headers });
+
+    busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
+        console.log(fieldname);
+        console.log(filename);
+        console.log(mimetype);
+        //getting the file extension (.png, .jpeg, etc)
+        const imageExtension = filename.split('.')[filename.split('.').length - 1];
+        //ex : 4544545645456.png
+        imageFileName = `${Math.round(Math.random() * 1000000000)}.${imageExtension}`;
+        const filepath = path.join(os.tmpdir(), imageFileName);
+        imageToBeUploaded = { filepath, mimetype };
+        //for now the file(object) is created, so need to use the filesystem library to actually create this file
+        file.pipe(fs.createWriteStream(filepath));
+    });
+    busboy.on('finish', () => {
+        admin.storage().bucket().upload(imageToBeUploaded.filepath, {
+            resumable: false,
+            metadata: {
+                metadata: {
+                    contentType: imageToBeUploaded.mimetype
+                }
+            }
+        })
+            .then(() => {
+                //construct the image url to added it to the user
+                https://firebasestorage.googleapis.com/v0/b/${config.storageBucket}/o/${imageFileName} 
+                // will just download the file to the computer instead of showing it onthe brower
+                //adding 'alt.media' will shows the image on the browser
+                const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${config.storageBucket}/o/${imageFileName}?alt=media`
+
+                //then add this url to our users user document 
+                return db.doc(`/users/${req.user.handle}`).update({ imageUrl });
+            })
+            .then(() => {
+                return res.json({ message: 'Image uploaded successfully' });
+            })
+            .catch(err => {
+                console.error(err);
+                return res.status(500).json({ error: err.code });
+            })
+    })
 }
