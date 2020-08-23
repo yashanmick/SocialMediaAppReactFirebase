@@ -7,7 +7,7 @@ const app = express();
 const FBAuth = require('./util/fbAuth');
 
 const { getAllScreams, postOneScream } = require('./handlers/screams');
-const { signup, login, uploadImage } = require('./handlers/users');
+const { signup, login, uploadImage, addUserDetails } = require('./handlers/users');
 
 
 const { ResultStorage } = require('firebase-functions/lib/providers/testLab');
@@ -20,6 +20,7 @@ app.post('/scream', FBAuth, postOneScream);     //post a scream
 app.post('/signup', signup);       //signup route
 app.post('/login', login);   //login route
 app.post('/user/image', FBAuth, uploadImage);       //upload image
+app.post('/user', FBAuth, addUserDetails);
 
 
 // https://baseurl.com/api/something
