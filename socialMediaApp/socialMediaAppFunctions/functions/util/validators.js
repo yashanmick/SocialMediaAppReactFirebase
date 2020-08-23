@@ -48,11 +48,11 @@ exports.validateLoginData = (data) => {
     let errors = {};
 
     //login validation
-    if (isEmpty(user.email)) {
+    if (isEmpty(data.email)) {
         errors.email = 'Must not be empty'
     }
 
-    if (isEmpty(user.password)) {
+    if (isEmpty(data.password)) {
         errors.password = 'Must not be empty'
     }
 
