@@ -63,3 +63,30 @@ exports.validateLoginData = (data) => {
     }
 }
 
+//user details
+exports.reduceUserDetails = (data) => {
+    let userDetails = {};
+
+    if (!isEmpty(data.bio.trim())) {
+        userDetails.bio = data.bio;
+    }
+
+    if (!isEmpty(data.website.trim())) {
+        // if -> website => https://website.com then save in that format, else -> save it as it is
+        //substing[0] = h
+        //substring[4] = p
+        //substring(0, 4) = http
+        if (data.website.trim().substring(0, 4) !== 'http') {
+            userDetails.website = `http://${data.website.trim()}`;
+        } else {
+            userDetails.website = data.website;
+        }
+    }
+
+    if (!isEmpty(data.location.trim())) {
+        userDetails.location = data.location;
+    }
+
+    return userDetails;
+}
+
