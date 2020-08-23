@@ -1,5 +1,5 @@
 //--------------------Middleware function--------------------------
-const { admin } = require('./admin');
+const { admin, db } = require('./admin');
 
 
 //user authentication
