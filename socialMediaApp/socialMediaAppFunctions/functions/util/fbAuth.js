@@ -30,6 +30,7 @@ module.exports = (req, res, next) => {
         })
         .then((data) => {
             req.user.handle = data.docs[0].data().handle;
+            req.user.ImageUrl = data.docs[0].data().ImageUrl;
             return next();
         })
         .catch(err => {
