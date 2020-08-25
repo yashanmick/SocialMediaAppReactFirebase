@@ -63,6 +63,21 @@ exports.createNotificationOnLike = functions.region('asia-south1').firestore.doc
 
     });
 
+//delete notification on unlike
+exports.deleteNotificationOnUnLike = functions
+    .region('europe-west1')
+    .firestore.document('likes/{id}')
+    .onDelete((snapshot) => {
+        return db
+            .doc(`/notifications/${snapshot.id}`)
+            .delete()
+            .catch((err) => {
+                console.error(err);
+                return;
+            });
+    });
+
+
 //notification on comment
 exports.createNotificationOnComment = functions
     .region('europe-west1')
