@@ -4,6 +4,8 @@ const express = require('express');
 const { ExportBundleInfo } = require('firebase-functions/lib/providers/analytics');
 const app = express();
 
+const { db } = require('./util/admin');
+
 const FBAuth = require('./util/fbAuth');
 
 const { getAllScreams, postOneScream, getScream, commentOnScream, likeScream, unlikeScream, deleteScream } = require('./handlers/screams');
@@ -32,3 +34,30 @@ app.get('/user', FBAuth, getAuthenticatedUser);     //hold redux data
 
 // https://baseurl.com/api/something
 exports.api = functions.region('asia-south1').https.onRequest(app);
+
+
+//notification on like
+exports.createNotificationOnLike = functions.region('asia-south1').firestore.document('likes/{id}')
+    .onCreate((snapshot) => {
+        db.document(`/screams/${snapshot.data().screamId}`)
+            .then(doc => {
+                if (doc.exists) {
+                    return db.doc(`/notifications/${snapshot.id}`).set({
+                        createdAt: new Date().toISOString(),
+                        recipient: doc.data().userHandle,
+                        sender: snapshot.data().userHandle,
+                        type: 'like',
+                        read: false,
+                        screamId: doc.id
+                    });
+                }
+            })
+            .then(() => {
+                return;
+            })
+            .catch((err) => {
+                console.error(err);
+                return;
+            });
+
+    });
