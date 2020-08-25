@@ -61,3 +61,32 @@ exports.createNotificationOnLike = functions.region('asia-south1').firestore.doc
             });
 
     });
+
+//notification on comment
+exports.createNotificationOnComment = functions
+    .region('europe-west1')
+    .firestore.document('comments/{id}')
+    .onCreate((snapshot) => {
+        return db
+            .doc(`/screams/${snapshot.data().screamId}`)
+            .get()
+            .then((doc) => {
+                if (
+                    doc.exists &&
+                    doc.data().userHandle !== snapshot.data().userHandle
+                ) {
+                    return db.doc(`/notifications/${snapshot.id}`).set({
+                        createdAt: new Date().toISOString(),
+                        recipient: doc.data().userHandle,
+                        sender: snapshot.data().userHandle,
+                        type: 'comment',
+                        read: false,
+                        screamId: doc.id
+                    });
+                }
+            })
+            .catch((err) => {
+                console.error(err);
+                return;
+            });
+    });
