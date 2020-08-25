@@ -37,12 +37,18 @@ exports.api = functions.region('asia-south1').https.onRequest(app);
 
 
 //notification on like
-exports.createNotificationOnLike = functions.region('asia-south1').firestore.document('likes/{id}')
+exports.createNotificationOnLike = functions
+    .region('asia-south1')
+    .firestore.document('likes/{id}')
     .onCreate((snapshot) => {
-        db.document(`/screams/${snapshot.data().screamId}`)
-            .then(doc => {
-                if (doc.exists &&
-                    doc.data().userHandle !== snapshot.data().userHandle) {
+        return db
+            .doc(`/screams/${snapshot.data().screamId}`)
+            .get()
+            .then((doc) => {
+                if (
+                    doc.exists &&
+                    doc.data().userHandle !== snapshot.data().userHandle
+                ) {
                     return db.doc(`/notifications/${snapshot.id}`).set({
                         createdAt: new Date().toISOString(),
                         recipient: doc.data().userHandle,
@@ -53,19 +59,12 @@ exports.createNotificationOnLike = functions.region('asia-south1').firestore.doc
                     });
                 }
             })
-            .then(() => {
-                return;
-            })
-            .catch((err) => {
-                console.error(err);
-                return;
-            });
-
+            .catch((err) => console.error(err));
     });
 
 //delete notification on unlike
 exports.deleteNotificationOnUnLike = functions
-    .region('europe-west1')
+    .region('asia-south1')
     .firestore.document('likes/{id}')
     .onDelete((snapshot) => {
         return db
@@ -80,7 +79,7 @@ exports.deleteNotificationOnUnLike = functions
 
 //notification on comment
 exports.createNotificationOnComment = functions
-    .region('europe-west1')
+    .region('asia-south1')
     .firestore.document('comments/{id}')
     .onCreate((snapshot) => {
         return db
