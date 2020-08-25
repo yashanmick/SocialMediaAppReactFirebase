@@ -41,7 +41,8 @@ exports.createNotificationOnLike = functions.region('asia-south1').firestore.doc
     .onCreate((snapshot) => {
         db.document(`/screams/${snapshot.data().screamId}`)
             .then(doc => {
-                if (doc.exists) {
+                if (doc.exists &&
+                    doc.data().userHandle !== snapshot.data().userHandle) {
                     return db.doc(`/notifications/${snapshot.id}`).set({
                         createdAt: new Date().toISOString(),
                         recipient: doc.data().userHandle,
