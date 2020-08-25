@@ -17,9 +17,9 @@ const { ResultStorage } = require('firebase-functions/lib/providers/testLab');
 app.get('/screams', getAllScreams);     //get all screams
 app.post('/scream', FBAuth, postOneScream);     //post a scream
 app.get('/scream/:screamId', getScream);
-// TODO: deleteScream
-app.get('/scream/:screamId/like', FBAuth, likeScream);//like a scream
-app.get('/scream/:screamId/unlike', FBAuth, unlikeScream); //unlike a scream
+app.delete('/scream/:screamId/delete', FBAuth, deleteScream);   //deleteScream
+app.get('/scream/:screamId/like', FBAuth, likeScream);  //like a scream
+app.get('/scream/:screamId/unlike', FBAuth, unlikeScream);  //unlike a scream
 app.post('/scream/:screamId/comment', FBAuth, commentOnScream);   //comment on scream
 
 //users routes
