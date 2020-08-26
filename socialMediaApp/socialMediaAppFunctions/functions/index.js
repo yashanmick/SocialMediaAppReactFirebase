@@ -115,11 +115,11 @@ exports.onUserImageChange = functions
     .region('asia-south1')
     .firestore.document('/users/{userId}')
     .onUpdate((change) => {
-        console.log(change.before.data());
-        console.log(change.after.data());
+        console.log(change.before.data());      //value before
+        console.log(change.after.data());       //value after
         if (change.before.data().imageUrl !== change.after.data().imageUrl) {
             console.log('image has changed');
-            const batch = db.batch();
+            const batch = db.batch();       //upload multiple documents
             return db
                 .collection('screams')
                 .where('userHandle', '==', change.before.data().handle)
