@@ -9,7 +9,7 @@ const { db } = require('./util/admin');
 const FBAuth = require('./util/fbAuth');
 
 const { getAllScreams, postOneScream, getScream, commentOnScream, likeScream, unlikeScream, deleteScream } = require('./handlers/screams');
-const { signup, login, uploadImage, addUserDetails, getAuthenticatedUser } = require('./handlers/users');
+const { signup, login, uploadImage, addUserDetails, getAuthenticatedUser, getUserDetails, markNotificationsRead } = require('./handlers/users');
 
 
 const { ResultStorage } = require('firebase-functions/lib/providers/testLab');
@@ -30,6 +30,8 @@ app.post('/login', login);   //login route
 app.post('/user/image', FBAuth, uploadImage);       //upload image
 app.post('/user', FBAuth, addUserDetails);      //add user details
 app.get('/user', FBAuth, getAuthenticatedUser);     //hold redux data
+app.get('/user/:handle', getUserDetails);   //get any user details
+app.post('/notifications', FBAuth, markNotificationsRead);  //mark notifications read or not
 
 
 // https://baseurl.com/api/something
