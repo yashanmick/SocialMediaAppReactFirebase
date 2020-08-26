@@ -29,7 +29,7 @@ app.post('/signup', signup);       //signup route
 app.post('/login', login);   //login route
 app.post('/user/image', FBAuth, uploadImage);       //upload image
 app.post('/user', FBAuth, addUserDetails);      //add user details
-app.get('/user', FBAuth, getAuthenticatedUser);     //hold redux data
+app.get('/user', FBAuth, getAuthenticatedUser);     //hold redux data  //get own user details
 app.get('/user/:handle', getUserDetails);   //get any user details
 app.post('/notifications', FBAuth, markNotificationsRead);  //mark notifications read or not
 
