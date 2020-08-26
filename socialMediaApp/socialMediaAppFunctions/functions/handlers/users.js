@@ -270,7 +270,7 @@ exports.uploadImage = (req, res) => {
 
 //mark notifications read 
 exports.markNotificationsRead = (req, res) => {
-    let batch = db.batch();
+    let batch = db.batch();     //batch() used when you need to update multiple documents at firebase
     req.body.forEach((notificationId) => {
         const notification = db.doc(`/notifications/${notificationId}`);
         batch.update(notification, { read: true });
