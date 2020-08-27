@@ -27,6 +27,9 @@ const theme = createMuiTheme({
       constrastText: '#fff'
     }
   },
+  typography: {
+    useNextVariants: true,
+  },
 })
 
 function App() {
