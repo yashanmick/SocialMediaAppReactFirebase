@@ -2,28 +2,29 @@ const { db } = require('../util/admin');
 
 //get all screams
 exports.getAllScreams = (req, res) => {
-    db.collection('screams').orderBy('createdAt', 'desc').get()
-        .then(data => {
+    db.collection('screams')
+        .orderBy('createdAt', 'desc')
+        .get()
+        .then((data) => {
             let screams = [];
-            data.forEach(doc => {
+            data.forEach((doc) => {
                 screams.push({
                     screamId: doc.id,
-                    //...doc.data()             //spread operator
                     body: doc.data().body,
                     userHandle: doc.data().userHandle,
                     createdAt: doc.data().createdAt,
                     commentCount: doc.data().commentCount,
                     likeCount: doc.data().likeCount,
-                    userImage: doc().data().userImage
+                    userImage: doc.data().userImage
                 });
             });
             return res.json(screams);
         })
-        .catch(err => {
+        .catch((err) => {
             console.error(err);
             res.status(500).json({ error: err.code });
         });
-}
+};
 
 //post one scream
 exports.postOneScream = (req, res) => {
