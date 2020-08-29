@@ -12,6 +12,10 @@ import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import CircularProgress from '@material-ui/core/CircularProgress';      //spinner
 
+//Redux stuff
+import { connect } from 'react-redux';
+import { loginUser } from '../redux/actions/userActions';
+
 const styles = theme => ({
     ...theme.spreadThis
 });
@@ -23,39 +27,32 @@ class login extends Component {
         this.state = {
             email: '',
             password: '',
-            loading: false,     //for spinner functionality
+            // loading: false,     //for spinner functionality (remove this after introducing the dispach)
             errors: {}       //in case of any errors happen when validating the form
+        }
+    }
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.UI.errors) {
+            this.setState({ errors: nextProps.UI.errors });
         }
     }
 
     //handle submit function
     handleSubmit = (event) => {
         event.preventDefault();     //preventing loading all over again
-        //send the req to the server and show any error or successfully sends the req to the server
+        //send the req to the server and show any error or successfully sends the req to the server  
+        /*
+         //loading state can be removed after using dispach in userActions
         this.setState({
             loading: true
         });
+        */
         const userData = {
             email: this.state.email,
             password: this.state.password
-        }
-        axios.post('/login', userData)
-            .then((res) => {
-                console.log(res.data);
-                localStorage.setItem('FBIdToken', `Bearer ${res.data.token}`);        //save token locally
-                this.setState({
-                    loading: false
-                });
-                //push state in the url and we go to it
-                this.props.history.push('/');
-            })
-            .catch(err => {
-                this.setState({
-                    errors: err.response.data,
-                    loading: false
-                });
-            })
-    }
+        };
+        this.props.loginUser(userData, this.props.history);
+    };
 
     //handle changed function
     //this event have a target property if we are on the text field, 
@@ -67,8 +64,11 @@ class login extends Component {
     }
 
     render() {
-        const { classes } = this.props;
-        const { errors, loading } = this.state;
+        const {
+            classes,
+            UI: { loading }
+        } = this.props;
+        const { errors } = this.state;
         return (
             <Grid container className={classes.form}>
                 <Grid item sm />
@@ -131,7 +131,25 @@ class login extends Component {
 }
 
 login.propTypes = {
-    classes: PropTypes.object.isRequired
-}
+    classes: PropTypes.object.isRequired,
+    loginUser: PropTypes.func.isRequired,
+    user: PropTypes.object.isRequired,
+    UI: PropTypes.object.isRequired
+};
 
-export default withStyles(styles)(login);
+//get only the useful data (extract from data object)
+const mapStateToProps = (state) => ({
+    user: state.user,
+    UI: state.UI
+});
+
+
+//which actions that we are gonna use
+const mapActionsToProps = {
+    loginUser
+};
+
+export default connect(
+    mapStateToProps,
+    mapActionsToProps
+)(withStyles(styles)(login));
