@@ -12,6 +12,10 @@ import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import CircularProgress from '@material-ui/core/CircularProgress';      //spinner
 
+// const styles = (theme) => ({
+//     ...theme
+// });
+
 const styles = {
     form: {
         textAlign: 'center'
@@ -37,9 +41,7 @@ const styles = {
     progress: {
         position: 'absolute'
     }
-
-};
-
+}
 
 class login extends Component {
     //handling forms by controlled component (states)
@@ -67,6 +69,7 @@ class login extends Component {
         axios.post('/login', userData)
             .then((res) => {
                 console.log(res.data);
+                localStorage.setItem('FBIdToken', `Bearer ${res.data.token}`);        //save token locally
                 this.setState({
                     loading: false
                 });
@@ -105,7 +108,7 @@ class login extends Component {
                             name="email"
                             type="email"
                             label="Email"
-                            className={classes.TextField}
+                            className={classes.textField}
                             helperText={errors.email}
                             error={errors.email ? true : false}
                             value={this.state.email}
@@ -117,7 +120,7 @@ class login extends Component {
                             name="password"
                             type="password"
                             label="Password"
-                            className={classes.TextField}
+                            className={classes.textField}
                             helperText={errors.password}
                             error={errors.password ? true : false}
                             value={this.state.password}
